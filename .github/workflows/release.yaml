@@ -53,6 +53,10 @@ jobs:
   # Job 2: Deploy the new image to the Kubernetes cluster
   deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
     # This job will only run after the 'build-and-push' job succeeds
     needs: build-and-push
 
