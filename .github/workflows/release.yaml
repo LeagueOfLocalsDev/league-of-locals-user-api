@@ -34,30 +34,41 @@ jobs:
           push: true
           tags: ghcr.io/thefadedone/league-of-locals-user-api:${{ github.sha }}
 
-  # Job 2: Deploy the new image to the Kubernetes cluster
+        # In .github/workflows/main.yml
+
   deploy:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
-    # This job will only run after the 'build-and-push' job succeeds
     needs: build-and-push
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # --- DEBUGGING STEP 1 ---
+      # This command will list every single file checked out onto the runner.
+      # It will prove whether the 'kube' directory is there or not.
+      - name: Verify that manifest files exist
+        run: ls -R
+
       - name: Install doctl
         uses: digitalocean/action-doctl@v2
         with:
-          token: ${{ secrets.DO_API_TOKEN }}
+          token: ${{ secrets.DO_PAT }}
 
-      - name: Create .kube directory
+      - name: Create .kube directory for config
         run: mkdir -p ~/.kube
 
-      - name: Save Kubernetes config
-        run: echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+      - name: Save Kubeconfig
+        run: doctl kubernetes cluster kubeconfig save league-of-locals-cluster
 
+      # --- DEBUGGING STEP 2 ---
+      # This verifies that we are successfully connected to your cluster.
+      - name: Verify kubectl connection
+        run: kubectl get nodes
+
+      # --- THE DEPLOYMENT STEP ---
+      # This is the command that was failing.
       - name: Deploy to DigitalOcean Kubernetes
+        # IMPORTANT: Make sure the path here EXACTLY matches the folder name
+        # shown in the "Verify that manifest files exist" step above.
+        # If your folder is named ".kube", change it here.
         run: kubectl apply -f ./kube
