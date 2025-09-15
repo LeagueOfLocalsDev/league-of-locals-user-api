@@ -60,9 +60,4 @@ jobs:
         run: echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
 
       - name: Deploy to DigitalOcean Kubernetes
-        run: |
-          # Use Helm to upgrade the application. This is the best practice.
-          # It installs the app if it's not there, or upgrades it if it is.
-          helm upgrade --install league-of-locals-user-api ./kube \
-            --set image.tag=${{ needs.build-and-push.outputs.image_tag }} \
-            --namespace default
+        run: kubectl apply -f ./kube
