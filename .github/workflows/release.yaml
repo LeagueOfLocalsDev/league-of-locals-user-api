@@ -1,16 +1,13 @@
 name: Build and Deploy User API
 
-# This workflow runs on every push to the main branch
 on:
   push:
     branches: [ "main" ]
 
 env:
-  # The prefix for your container images
   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
-  # Job 1: Build the code, create a Docker image, and push it to the registry
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
@@ -33,8 +30,6 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/thefadedone/league-of-locals-user-api:${{ github.sha }}
-
-        # In .github/workflows/main.yml
 
   deploy:
     runs-on: ubuntu-latest
