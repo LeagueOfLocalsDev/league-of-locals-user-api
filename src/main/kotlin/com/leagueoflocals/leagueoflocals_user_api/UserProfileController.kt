@@ -15,8 +15,8 @@ class UserProfileController {
     @GetMapping("/me")
     fun getMyProfile(): UserProfile {
         return UserProfile(
-            userId = "user-9a8b7c",
-            username = "chicagorunner22",
+            userId = "yfifhuf70hfwj9a8b7c",
+            username = "andrewb24",
             homeCity = "Chicago",
             lifetimeRaces = 42
         )
