@@ -16,7 +16,7 @@ class UserProfileController {
     fun getMyProfile(): UserProfile {
         return UserProfile(
             userId = "yfifhuf70hfwj9a8b7c",
-            username = "andrewb24",
+            username = "andrewb23",
             homeCity = "Chicago",
             lifetimeRaces = 42
         )
