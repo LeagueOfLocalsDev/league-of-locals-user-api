@@ -16,10 +16,12 @@ spec:
         app: league-of-locals-user-api
     spec:
       containers:
-        - # The container name is also updated for consistency.
-          name: league-of-locals-user-api
-          image: ghcr.io/thefadedone/league-of-locals-user-api:latest
-          ports:
-            - containerPort: 8080
+      - name: league-of-locals-user-api
+        image: ghcr.io/thefadedone/league-of-locals-user-api:latest
+        ports:
+        - containerPort: 8080
+        envFrom:
+          - secretRef:
+              name: league-of-locals-user-api-db-creds
       imagePullSecrets:
-        - name: ghcr-secret
+      - name: ghcr-secret
