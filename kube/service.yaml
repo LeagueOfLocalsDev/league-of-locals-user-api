@@ -1,13 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  # The service name is updated to reflect the deployment it serves.
   name: league-of-locals-user-api-svc
 spec:
   type: NodePort
-  # This selector is the critical link. It has been updated to match the new
-  # pod label 'app: league-of-locals-user-api'. This ensures the service
-  # sends traffic to the correct pods.
   selector:
     app: league-of-locals-user-api
   ports:
