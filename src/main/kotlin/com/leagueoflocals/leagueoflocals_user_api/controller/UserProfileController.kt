@@ -2,6 +2,7 @@ package com.leagueoflocals.leagueoflocals_user_api.controller
 
 import com.leagueoflocals.leagueoflocals_user_api.model.UserProfile
 import com.leagueoflocals.leagueoflocals_user_api.repository.UserProfileRepository
+import com.leagueoflocals.leagueoflocals_user_api.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.*
@@ -9,17 +10,14 @@ import java.util.*
 @RestController
 @RequestMapping("/api/v1/profiles")
 class UserProfileController(
-    private val userProfileRepository: UserProfileRepository
+    private val userProfileRepository: UserProfileRepository,
+    private val userService: UserService,
 ) {
 
     @PostMapping
     fun createUserProfile(@RequestBody profileRequest: CreateProfileRequest): ResponseEntity<Map<String, UUID>> {
-        val newUserProfile = UserProfile(
-            username = profileRequest.username,
-            homeCity = profileRequest.homeCity,
-            sex = profileRequest.sex
-        )
-        val savedProfile = userProfileRepository.save(newUserProfile)
+
+        val savedProfile = userService.createUser(profileRequest)
         return ResponseEntity.ok(mapOf("id" to savedProfile.userId))
     }
 
@@ -42,4 +40,10 @@ class UserProfileController(
     }
 }
 
-data class CreateProfileRequest(val username: String, val homeCity: String, val sex: String)
+data class CreateProfileRequest(
+    val username: String,
+    val homeCity: String,
+    val sex: String,
+    val email: String,
+    val password: String,
+)

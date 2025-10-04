@@ -20,5 +20,7 @@ spec:
         envFrom:
           - secretRef:
               name: league-of-locals-user-api-db-creds
+          - secretRef:
+              name: auth0-api-creds
       imagePullSecrets:
       - name: ghcr-secret
