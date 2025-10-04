@@ -29,7 +29,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/thefadedone/league-of-locals-user-api:${{ github.sha }}
+          tags: ghcr.io/leagueoflocalsdev/league-of-locals-user-api:${{ github.sha }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,4 +61,4 @@ jobs:
       - name: Set the correct image tag on the deployment
         run: |
           kubectl set image deployment/league-of-locals-user-api \
-            league-of-locals-user-api=ghcr.io/thefadedone/league-of-locals-user-api:${{ github.sha }}
+            league-of-locals-user-api=ghcr.io/leagueoflocalsdev/league-of-locals-user-api:${{ github.sha }}

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: league-of-locals-user-api
-        image: ghcr.io/thefadedone/league-of-locals-user-api:latest
+        image: ghcr.io/leagueoflocalsdev/league-of-locals-user-api:latest
         ports:
         - containerPort: 8080
         envFrom:
