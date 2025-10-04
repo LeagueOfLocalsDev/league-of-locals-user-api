@@ -13,13 +13,14 @@ class UserProfileController(
 ) {
 
     @PostMapping
-    fun createUserProfile(@RequestBody profileRequest: CreateProfileRequest): UserProfile {
+    fun createUserProfile(@RequestBody profileRequest: CreateProfileRequest): ResponseEntity<Map<String, UUID>> {
         val newUserProfile = UserProfile(
             username = profileRequest.username,
             homeCity = profileRequest.homeCity,
             sex = profileRequest.sex
         )
-        return userProfileRepository.save(newUserProfile)
+        val savedProfile = userProfileRepository.save(newUserProfile)
+        return ResponseEntity.ok(mapOf("id" to savedProfile.userId))
     }
 
     @GetMapping("/{userId}")
@@ -27,6 +28,17 @@ class UserProfileController(
         return userProfileRepository.findById(userId)
             .map { ResponseEntity.ok(it) }
             .orElse(ResponseEntity.notFound().build())
+    }
+
+    @DeleteMapping("/{userId}")
+    fun deleteUserProfile(@PathVariable userId: UUID): ResponseEntity<Void> {
+
+        return if (userProfileRepository.existsById(userId)) {
+            userProfileRepository.deleteById(userId)
+            ResponseEntity.noContent().build()
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 }
 

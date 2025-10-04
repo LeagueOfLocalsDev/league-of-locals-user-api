@@ -13,9 +13,9 @@ data class Friendship(
     @Id
     val friendshipId: UUID = UUID.randomUUID(),
 
-    val userOneId: UUID, // The user who initiated the request
-    val userTwoId: UUID, // The user who received the request
+    val userOneId: UUID,
+    val userTwoId: UUID,
 
-    var status: String, // e.g., "pending", "accepted", "blocked"
+    var status: String,
     val requestedAt: Instant = Instant.now()
 )

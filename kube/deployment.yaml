@@ -1,17 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # The name of your deployment has been updated.
   name: league-of-locals-user-api
 spec:
   replicas: 1
-  # This selector is updated to match the new pod label.
   selector:
     matchLabels:
       app: league-of-locals-user-api
   template:
     metadata:
-      # This label, applied to each pod, is updated to the new name.
       labels:
         app: league-of-locals-user-api
     spec:
