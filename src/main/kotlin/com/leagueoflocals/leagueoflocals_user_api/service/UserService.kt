@@ -17,7 +17,7 @@ class UserService(
         val auth0User = auth0ManagementClient.createUser(request.email, request.password, request.username)
 
         val newUserProfile = UserProfile(
-            auth0UserId = auth0User.userId,
+            auth0UserId = auth0User.user_id,
             username = request.username,
             homeCity = request.homeCity,
             sex = request.sex

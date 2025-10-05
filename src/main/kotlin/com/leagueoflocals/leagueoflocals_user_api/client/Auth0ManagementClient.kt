@@ -42,4 +42,4 @@ class Auth0ManagementClient(
 }
 
 private data class Auth0CreateUserRequest(val email: String, val password: String, val connection: String, val nickname: String)
-data class Auth0User(val userId: String, val email: String, val nickname: String)
+data class Auth0User(val user_id: String, val email: String, val nickname: String)
