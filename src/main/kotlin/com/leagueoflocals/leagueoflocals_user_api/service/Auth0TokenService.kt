@@ -11,15 +11,15 @@ import org.springframework.web.reactive.function.client.bodyToMono
 class Auth0TokenService(
     @Value("\${auth0.domain}") private val domain: String,
     @Value("\${auth0.client-id}") private val clientId: String,
-    @Value("\${auth0.client-secret}") private val clientSecret: String
+    @Value("\${auth0.client-secret}") private val clientSecret: String,
+    private val scheme: String = "https"
 ) {
     private val webClient = WebClient.builder().build()
 
     @Cacheable(cacheNames = ["auth0-token"], unless = "#result.isBlank()")
     fun getManagementApiToken(): String {
-        println("==> FETCHING NEW AUTH0 TOKEN... <==") // We'll add this log to prove it's working
 
-        val tokenUrl = "https://$domain/oauth/token"
+        val tokenUrl = "$scheme://$domain/oauth/token"
         val request = Auth0TokenRequest(
             client_id = clientId,
             client_secret = clientSecret,
