@@ -21,6 +21,12 @@ class UserProfileController(
         return ResponseEntity.ok(mapOf("id" to savedProfile.userId))
     }
 
+    @GetMapping
+    fun listUserProfiles(): ResponseEntity<List<UserProfile>> {
+        val all = userProfileRepository.findAll()
+        return ResponseEntity.ok(all)
+    }
+
     @GetMapping("/{userId}")
     fun getUserProfile(@PathVariable userId: UUID): ResponseEntity<UserProfile> {
         return userProfileRepository.findById(userId)
