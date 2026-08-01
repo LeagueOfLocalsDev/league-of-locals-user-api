@@ -17,7 +17,7 @@ class SecurityConfig {
             .csrf { it.disable() }
             .authorizeHttpRequests { authorize ->
                 authorize
-                    .requestMatchers(HttpMethod.POST, "/api/v1/profiles").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/user-profile-api/profiles").permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2ResourceServer { oauth2 ->
