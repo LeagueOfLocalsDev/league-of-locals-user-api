@@ -1,0 +1,44 @@
+# Shared defaults. Deploy using one of the environment-specific values files.
+replicaCount: 1
+
+# Exposed to the application as SPRING_PROFILES_ACTIVE.
+environment: dev
+
+image:
+  repository: ghcr.io/leagueoflocalsdev/league-of-locals-user-api
+  # CI always overrides this with an immutable Git commit SHA.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+# The Doppler operator uses a per-environment service token to continuously
+# populate the Kubernetes Secrets consumed by this release. Set project/config
+# through GitHub Environment variables or with --set-string for local deploys.
+doppler:
+  project: ""
+  config: ""
+  tokenSecretName: doppler-user-api-token
+  applicationSecretName: league-of-locals-user-api-secrets
+  registry:
+    enabled: true
+    secretName: ghcr-secret
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  # Set only when type is NodePort.
+  nodePort: null
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+probes:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 6

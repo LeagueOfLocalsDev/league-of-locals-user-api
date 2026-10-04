@@ -3,12 +3,19 @@ name: Build and Deploy User API
 on:
   push:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Immutable image tag (the commit SHA previously built from main)"
+        required: true
+        type: string
 
 env:
   IMAGE_NAME: ghcr.io/${{ github.repository }}
 
 jobs:
   build-and-push:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,31 +38,22 @@ jobs:
           push: true
           tags: ghcr.io/leagueoflocalsdev/league-of-locals-user-api:${{ github.sha }}
 
-  deploy:
-    runs-on: ubuntu-latest
+  deploy-dev:
     needs: build-and-push
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    uses: ./.github/workflows/deploy.yaml
+    with:
+      github_environment: dev
+      namespace: league-of-locals-dev
+      values_file: ./helm/league-of-locals-user-api/values-dev.yaml
+      image_tag: ${{ github.sha }}
+    secrets: inherit
 
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
-        with:
-          token: ${{ secrets.DO_API_TOKEN }}
-
-      - name: Create .kube directory for config
-        run: mkdir -p ~/.kube
-
-      - name: Save Kubeconfig
-        run: doctl kubernetes cluster kubeconfig save league-of-locals-cluster
-
-      - name: Verify kubectl connection
-        run: kubectl get nodes
-
-      - name: Deploy to DigitalOcean Kubernetes
-        run: kubectl apply -f ./kube
-
-      - name: Set the correct image tag on the deployment
-        run: |
-          kubectl set image deployment/league-of-locals-user-api \
-            league-of-locals-user-api=ghcr.io/leagueoflocalsdev/league-of-locals-user-api:${{ github.sha }}
+  deploy-production:
+    if: github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/deploy.yaml
+    with:
+      github_environment: production
+      namespace: league-of-locals-prod
+      values_file: ./helm/league-of-locals-user-api/values-prod.yaml
+      image_tag: ${{ inputs.image_tag }}
+    secrets: inherit

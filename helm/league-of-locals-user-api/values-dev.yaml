@@ -1,0 +1,18 @@
+# Applied to the league-of-locals-dev namespace.
+image:
+  pullPolicy: Always
+
+# Preserves the current externally reachable port while allowing production to
+# use a different one. Replace with ClusterIP once an Ingress/API gateway owns
+# external routing.
+service:
+  type: NodePort
+  nodePort: 32621
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

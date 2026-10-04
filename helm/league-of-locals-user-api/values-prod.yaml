@@ -1,0 +1,16 @@
+# Applied to the league-of-locals-prod namespace.
+replicaCount: 2
+environment: prod
+
+service:
+  type: NodePort
+  # NodePorts are cluster-wide; production must not reuse dev's 32621.
+  nodePort: 32622
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi

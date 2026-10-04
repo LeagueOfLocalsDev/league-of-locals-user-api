@@ -21,5 +21,7 @@ data class UserProfile(
 
     var homeCity: String,
     var sex: String,
-    var lifetimeRaces: Int = 0
+    var lifetimeRaces: Int = 0,
+    var firstName: String? = null,
+    var lastName: String? = null,
 )

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "league-of-locals-user-api.fullname" . }}
+  annotations:
+    secrets.doppler.com/reload: "true"
+  labels:
+    {{- include "league-of-locals-user-api.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "league-of-locals-user-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "league-of-locals-user-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if .Values.doppler.registry.enabled }}
+      imagePullSecrets:
+        - name: {{ required "doppler.registry.secretName must be set when the registry sync is enabled" .Values.doppler.registry.secretName }}
+      {{- end }}
+      containers:
+        - name: {{ include "league-of-locals-user-api.name" . }}
+          image: "{{ .Values.image.repository }}:{{ required "image.tag must be set to an immutable image tag" .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ required "doppler.applicationSecretName must be set" .Values.doppler.applicationSecretName }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ required "environment must be set" .Values.environment | quote }}
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.failureThreshold }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.probes.periodSeconds }}
+            timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+            failureThreshold: {{ .Values.probes.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

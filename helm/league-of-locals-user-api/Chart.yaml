@@ -1,0 +1,6 @@
+apiVersion: v2
+name: league-of-locals-user-api
+description: Helm chart for the League of Locals User API
+type: application
+version: 0.1.0
+appVersion: "latest"

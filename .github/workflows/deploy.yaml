@@ -1,0 +1,113 @@
+name: Deploy User API
+
+on:
+  workflow_call:
+    inputs:
+      github_environment:
+        description: "GitHub Environment that supplies deployment secrets and approvals"
+        required: true
+        type: string
+      namespace:
+        description: "Kubernetes namespace for this release"
+        required: true
+        type: string
+      values_file:
+        description: "Environment-specific Helm values file"
+        required: true
+        type: string
+      image_tag:
+        description: "Immutable 40-character Git commit SHA for the container image"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.github_environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.github_environment }}
+    concurrency:
+      # Both environments share one cluster-wide operator Helm release.
+      group: user-api-doppler-operator-and-deploy
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate deployment inputs
+        env:
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          DOPPLER_PROJECT: ${{ vars.DOPPLER_PROJECT }}
+          DOPPLER_CONFIG: ${{ vars.DOPPLER_CONFIG }}
+          DOPPLER_SERVICE_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+        run: |
+          if [[ ! "$IMAGE_TAG" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "image_tag must be a full, lowercase 40-character Git commit SHA." >&2
+            exit 1
+          fi
+          if [[ ! "$DOPPLER_PROJECT" =~ ^[a-z0-9_-]+$ || ! "$DOPPLER_CONFIG" =~ ^[a-z0-9_-]+$ ]]; then
+            echo "Set DOPPLER_PROJECT and DOPPLER_CONFIG GitHub Environment variables to Doppler slugs." >&2
+            exit 1
+          fi
+          if [[ -z "$DOPPLER_SERVICE_TOKEN" ]]; then
+            echo "Required GitHub Environment secret DOPPLER_SERVICE_TOKEN is not set." >&2
+            exit 1
+          fi
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DO_API_TOKEN }}
+
+      - name: Save kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          doctl kubernetes cluster kubeconfig save league-of-locals-cluster
+          kubectl get nodes
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Install Doppler Kubernetes Operator
+        run: |
+          helm repo add doppler https://helm.doppler.com
+          helm upgrade --install doppler-operator doppler/doppler-kubernetes-operator \
+            --version 1.7.1 \
+            --namespace doppler-operator-system \
+            --create-namespace \
+            --wait \
+            --atomic
+          kubectl wait --for=condition=Established \
+            crd/dopplersecrets.secrets.doppler.com --timeout=120s
+
+      - name: Bootstrap Doppler access
+        env:
+          NAMESPACE: ${{ inputs.namespace }}
+          DOPPLER_SERVICE_TOKEN: ${{ secrets.DOPPLER_SERVICE_TOKEN }}
+        run: |
+          set -euo pipefail
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl -n "$NAMESPACE" create secret generic doppler-user-api-token \
+            --from-literal=serviceToken="$DOPPLER_SERVICE_TOKEN" \
+            --dry-run=client -o yaml | kubectl apply --server-side --field-manager=github-actions -f -
+
+      - name: Deploy Helm release
+        env:
+          NAMESPACE: ${{ inputs.namespace }}
+          VALUES_FILE: ${{ inputs.values_file }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          DOPPLER_PROJECT: ${{ vars.DOPPLER_PROJECT }}
+          DOPPLER_CONFIG: ${{ vars.DOPPLER_CONFIG }}
+        run: |
+          set -euo pipefail
+          helm upgrade --install league-of-locals-user-api ./helm/league-of-locals-user-api \
+            --namespace "$NAMESPACE" \
+            --create-namespace \
+            --values "$VALUES_FILE" \
+            --set-string "image.tag=$IMAGE_TAG" \
+            --set-string "doppler.project=$DOPPLER_PROJECT" \
+            --set-string "doppler.config=$DOPPLER_CONFIG" \
+            --timeout 10m \
+            --wait \
+            --atomic

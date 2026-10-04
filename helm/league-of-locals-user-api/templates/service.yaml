@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "league-of-locals-user-api.fullname" . }}
+  labels:
+    {{- include "league-of-locals-user-api.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "league-of-locals-user-api.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: http
+      {{- if eq .Values.service.type "NodePort" }}
+      nodePort: {{ required "service.nodePort must be set when service.type is NodePort" .Values.service.nodePort }}
+      {{- end }}
