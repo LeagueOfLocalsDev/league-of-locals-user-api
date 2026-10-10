@@ -37,8 +37,3 @@ resources:
     cpu: 250m
     memory: 256Mi
 
-probes:
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 3
-  failureThreshold: 6
