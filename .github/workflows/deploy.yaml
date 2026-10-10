@@ -30,7 +30,7 @@ jobs:
       group: user-api-doppler-operator-and-deploy
       cancel-in-progress: false
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
